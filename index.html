@@ -1,81 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>zevware</title>
-<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
-
-<style>
-body {
-  margin: 0;
-  background: #000;
-  color: #00ff88;
-  font-family: 'Source Code Pro', monospace;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-.terminal {
-  width: 600px;
-  max-width: 90%;
-  padding: 20px;
-  border: 1px solid #222;
-  border-radius: 10px;
-  box-shadow: 0 0 20px #00ff88;
-}
-
-.topbar {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 15px;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.red { background: #ff5f56; }
-.yellow { background: #ffbd2e; }
-.green { background: #27c93f; }
-
-.line {
-  white-space: pre;
-}
-
-/* :point_down: adds spacing between sections */
-.section-space {
-  height: 10px;
-}
-
-.footer {
-  margin-top: 15px;
-  color: #00ff88;
-  font-size: 12px;
-  opacity: 0.7;
-}
-</style>
-</head>
-
-<body>
-
-<div class="terminal">
-  <div class="topbar">
-    <div class="dot red"></div>
-    <div class="dot yellow"></div>
-    <div class="dot green"></div>
-  </div>
-  <div id="output"></div>
-</div>
-
-<div class="footer">
-  # made with ♡ by zevnextdoor
-</div>
-
 <script>
 const output = document.getElementById("output");
 
@@ -85,40 +7,42 @@ const intro = [
 "> /// Access Granted ///"
 ];
 
-const mainContent = [
+const sections = [
+[
 "$ about.me",
 "> user      : zevnextdoor",
 "> alias     : zev",
 "> bio       : cheat developer & roblox ugc creator",
-"> description   : contributed to 10M+ robux in sales",
-"__SPACE__",
-
+"> description   : contributed to 10M+ robux in sales"
+],
+[
 "$ Languages",
 "  ├ python",
 "  ├ javascript",
 "  ├ html",
 "  ├ lua",
-"  └ c++",
-"__SPACE__",
-
+"  └ c++"
+],
+[
 "$ Interests",
 "  ├ automation",
 "  ├ web development",
 "  ├ cheat development",
 "  ├ gaming",
-"  └ music",
-"__SPACE__",
-
+"  └ music"
+],
+[
 "$ echo \Thanks for visiting! <3\"
+]
 ];
 
 let speed = 20;
 
-function typeLine(text, callback) {
+function typeLine(text, parent, callback) {
   let i = 0;
   const div = document.createElement("div");
   div.className = "line";
-  output.appendChild(div);
+  parent.appendChild(div);
 
   function typing() {
     if (i < text.length) {
@@ -133,38 +57,76 @@ function typeLine(text, callback) {
   typing();
 }
 
-function typeLines(lines, index = 0, callback) {
-  if (index < lines.length) {
+function addSpacing() {
+  const space = document.createElement("div");
+  space.style.height = "14px";
+  output.appendChild(space);
+}
 
-    //  spacing logic
-    if (lines[index] === "__SPACE__") {
-      const space = document.createElement("div");
-      space.className = "section-space";
-      output.appendChild(space);
+function typeSection(section, callback) {
+  const sectionDiv = document.createElement("div");
+  output.appendChild(sectionDiv);
 
-      setTimeout(() => {
-        typeLines(lines, index + 1, callback);
-      }, 150);
+  let i = 0;
 
-    } else {
-      typeLine(lines[index], () => {
-        typeLines(lines, index + 1, callback);
+  function nextLine() {
+    if (i < section.length) {
+      typeLine(section[i], sectionDiv, () => {
+        i++;
+        nextLine();
       });
+    } else {
+      addSpacing(); // 👈 safe spacing AFTER section finishes
+      callback && callback();
     }
+  }
 
+  nextLine();
+}
+
+function typeAll(index = 0, callback) {
+  if (index < sections.length) {
+    typeSection(sections[index], () => {
+      setTimeout(() => typeAll(index + 1, callback), 150);
+    });
   } else {
     callback && callback();
   }
 }
 
-// run animation
-typeLines(intro, 0, () => {
-  setTimeout(() => {
-    output.innerHTML = "";
-    typeLines(mainContent);
-  }, 1200);
-});
-</script>
+// run intro then main
+function start() {
+  let i = 0;
 
-</body>
-</html>
+  function typeIntro() {
+    if (i < intro.length) {
+      const div = document.createElement("div");
+      div.className = "line";
+      output.appendChild(div);
+
+      let j = 0;
+      function typing() {
+        if (j < intro[i].length) {
+          div.textContent += intro[i][j];
+          j++;
+          setTimeout(typing, speed);
+        } else {
+          i++;
+          typeIntro();
+        }
+      }
+
+      typing();
+    } else {
+      setTimeout(() => {
+        output.innerHTML = "";
+        typeAll();
+      }, 1000);
+    }
+  }
+
+  typeIntro();
+}
+
+start();
+</script>
